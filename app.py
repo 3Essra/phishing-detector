@@ -4,7 +4,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
 
 # تحميل البيانات وتدريب النموذج
-df = pd.read_csv(r"C:\Phishing\PhiUSIIL_Phishing_URL_Dataset.csv")
+df = pd.read_csv("PhiUSIIL_Phishing_URL_Dataset.csv")  # بدون مسار مباشر
 df = df.drop(columns=[
     'FILENAME', 'Domain', 'Title', 'LineOfCode', 'LargestLineLength', 'HasTitle', 'HasFavicon',
     'Robots', 'IsResponsive', 'NoOfPopup', 'NoOfiFrame', 'HasExternalFormSubmit',
@@ -34,5 +34,7 @@ def index():
         result = "Phishing" if prediction[0] == 1 else "Safe"
     return render_template("index.html", result=result)
 
+# تشغيل التطبيق على Render
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=10000)
+
