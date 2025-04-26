@@ -1,16 +1,26 @@
-import pickle
+import joblib
 from flask import Flask, render_template, request
+import re
+from urllib.parse import urlparse
 
 app = Flask(__name__)
 
-# تحميل النموذج والمدرب و vectorizer
-with open("model.pkl", "rb") as model_file:
-    model = pickle.load(model_file)
-    print("✅ تم تحميل النموذج")
+# تحميل النموذج المدرب
+model = joblib.load("phishing_model.pkl")
+print("✅ تم تحميل النموذج")
 
-with open("vectorizer.pkl", "rb") as vec_file:
-    vectorizer = pickle.load(vec_file)
-    print("✅ تم تحميل الvectorizer")
+# دالة استخراج الخصائص من الرابط
+def extract_features(url):
+    features = []
+    features.append(len(url))  # طول الرابط
+    features.append(url.count('@'))  # عدد @
+    features.append(url.count('.'))  # عدد .
+    features.append(url.count('-'))  # عدد -
+    features.append(url.count('='))  # عدد =
+    features.append(1 if re.search(r'\d+\.\d+\.\d+\.\d+', url) else 0)  # يستخدم IP أو لا
+    parsed = urlparse(url)
+    features.append(len(parsed.netloc))  # طول الدومين
+    return features
 
 @app.route("/", methods=["GET", "POST"])
 def home():
@@ -21,9 +31,9 @@ def home():
             result = "الرجاء إدخال رابط."
         else:
             try:
-                # استخدام نفس الvectorizer اللي تدرب عليه النموذج
-                input_vector = vectorizer.transform([user_input])
-                prediction = model.predict(input_vector)
+                # استخراج الخصائص من الرابط
+                features = extract_features(user_input)
+                prediction = model.predict([features])
                 result = "Phishing" if prediction[0] == 1 else "Not Phishing"
             except Exception as e:
                 print(f"❌ خطأ أثناء المعالجة: {e}")

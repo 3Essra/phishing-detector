@@ -1,43 +1,40 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.naive_bayes import MultinomialNB
-import pickle
+from sklearn.ensemble import RandomForestClassifier
+import re
+from urllib.parse import urlparse
+import joblib
 
-# تحميل البيانات
-df = pd.read_csv("PhiUSIIL_Phishing_URL_Dataset.csv")
+# دالة استخراج الخصائص من الرابط
+def extract_features(url):
+    features = []
+    features.append(len(url))  # طول الرابط
+    features.append(url.count('@'))  # عدد @
+    features.append(url.count('.'))  # عدد .
+    features.append(url.count('-'))  # عدد -
+    features.append(url.count('='))  # عدد =
+    features.append(1 if re.search(r'\d+\.\d+\.\d+\.\d+', url) else 0)  # يستخدم IP أو لا
+    parsed = urlparse(url)
+    features.append(len(parsed.netloc))  # طول الدومين
+    return features
 
-X = df['URL']
-y = df['label']
+# قراءة الداتا
+df = pd.read_csv('PhiUSIIL_Phishing_URL_Dataset.csv')
+
+# تجهيز البيانات
+X = df['URL'].apply(extract_features).tolist()
+y = df['Label'].apply(lambda x: 1 if x == 'Phishing' else 0)
 
 # تقسيم البيانات
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# تهيئة الvectorizer
-vectorizer = TfidfVectorizer(
-    ngram_range=(1, 2),
-    max_df=0.95,
-    min_df=2,
-    stop_words='english',
-    max_features=1000
-)
-
-
-X_train_tfidf = vectorizer.fit_transform(X_train)
-X_test_tfidf = vectorizer.transform(X_test)
-
 # تدريب النموذج
-model = MultinomialNB()
-model.fit(X_train_tfidf, y_train)
-
-# اختبار النموذج
-accuracy = model.score(X_test_tfidf, y_test)
-print(f"دقة النموذج: {accuracy * 100:.2f}%")
+model = RandomForestClassifier()
+model.fit(X_train, y_train)
 
 # حفظ النموذج
-with open("model.pkl", "wb") as model_file:
-    pickle.dump(model, model_file)
+joblib.dump(model, 'phishing_model.pkl')
 
-# حفظ الvectorizer
-with open("vectorizer.pkl", "wb") as vec_file:
-    pickle.dump(vectorizer, vec_file)
+# تقييم الدقة
+accuracy = model.score(X_test, y_test)
+print(f"دقة النموذج: {accuracy * 100:.2f}%")
