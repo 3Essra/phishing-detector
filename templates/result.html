@@ -1,10 +1,44 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Prediction Result</title>
+    <style>
+        body {
+            background-color: #f4e8e8;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding-top: 100px;
+        }
+
+        .result-container {
+            background-color: #ffffff;
+            padding: 50px;
+            border-radius: 12px;
+            display: inline-block;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        a {
+            display: block;
+            margin-top: 20px;
+            color: #007BFF;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-    <h1>Prediction Result: {{ result }}</h1>
-    <a href="/">Go Back</a>
+    <div class="result-container">
+        <h1>Prediction: {{ prediction[0] }}</h1>
+        <a href="/">Check Another URL</a>
+    </div>
 </body>
 </html>

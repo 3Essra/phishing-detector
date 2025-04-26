@@ -1,36 +1,36 @@
-
-import pandas as pd
-# train_model.py
-import pandas as pd
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.naive_bayes import MultinomialNB
+# نستورد المكتبات
 import pickle
+import pandas as pd
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
 
-# تحميل البيانات
-df = pd.read_csv("PhiUSIIL_Phishing_URL_Dataset.csv")
-df = df.drop(columns=[
-    'FILENAME', 'Domain', 'Title', 'LineOfCode', 'LargestLineLength', 'HasTitle', 'HasFavicon',
-    'Robots', 'IsResponsive', 'NoOfPopup', 'NoOfiFrame', 'HasExternalFormSubmit',
-    'HasSocialNet', 'HasSubmitButton', 'HasHiddenFields', 'HasPasswordField',
-    'Bank', 'Pay', 'Crypto'
-])
-X = df['URL']
-y = df['label']
+# نقرأ ملف البيانات
+df = pd.read_csv("PhiUSIIL_Phishing_URL_Dataset.csv")  # اسم ملفك
 
-# تحويل النصوص
-vectorizer = TfidfVectorizer(ngram_range=(1, 2), max_df=0.9, min_df=5,
-                             stop_words='english', max_features=5000)
-X_tfidf = vectorizer.fit_transform(X)
+# حذف الأعمدة النصية اللي تسبب مشاكل
+for col in df.columns:
+    if df[col].dtype == 'object':
+        if col != 'label':  # نخلي عمود النتيجة فقط
+            df = df.drop(col, axis=1)
 
-# تدريب النموذج
-model = MultinomialNB()
-model.fit(X_tfidf, y)
+# تحويل العمود 'label' إلى أرقام
+le = LabelEncoder()
+df['label'] = le.fit_transform(df['label'])
 
-# حفظ النموذج والمتجه
+# نجهز البيانات
+X = df.drop("label", axis=1)
+y = df["label"]
+
+# نقسم البيانات إلى تدريب واختبار
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+# ننشئ النموذج
+model = LogisticRegression(max_iter=1000)
+model.fit(X_train, y_train)
+
+# نحفظ النموذج داخل ملف
 with open("model.pkl", "wb") as f:
     pickle.dump(model, f)
 
-with open("vectorizer.pkl", "wb") as f:
-    pickle.dump(vectorizer, f)
-
-print("✅ تم حفظ النموذج والمتجه.")
+print("🎉 تم حفظ النموذج بنجاح بدون مشاكل نصية!")
