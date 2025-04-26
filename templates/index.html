@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -55,14 +55,16 @@
         button:hover {
             background-color: #0056b3;
         }
-        h2 {
-            margin-top: 20px;
-            color: #d9534f;
-        }
         .result {
             font-size: 20px;
             font-weight: bold;
             margin-top: 20px;
+        }
+        .safe {
+            color: green;
+        }
+        .phishing {
+            color: red;
         }
     </style>
 </head>
@@ -79,8 +81,12 @@
         </form>
 
         {% if result %}
-            <div class="result">
-                <h2>نتيجة: {{ result }}</h2>
+            <div class="result {% if result == 'Not Phishing' %}safe{% else %}phishing{% endif %}">
+                {% if result == 'Not Phishing' %}
+                    ✅ الرابط آمن ومضمون!
+                {% else %}
+                    🚨 تحذير! الرابط احتيالي!
+                {% endif %}
             </div>
         {% endif %}
     </div>
